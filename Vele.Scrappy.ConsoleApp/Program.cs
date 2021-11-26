@@ -38,7 +38,14 @@ namespace Vele.Scrappy.ConsoleApp
 
             try
             {
-                // TODO: invoke scraping process here!
+                Scrappy instance = new Scrappy(
+                    opts.OutputFolder,
+                    opts.WebsiteUrl,
+                    opts.DownloadExternal,
+                    opts.ParallelExecutionCount,
+                    _logger);
+
+                instance.ScrapeWebsite().Wait();
 
                 _logger.Information("Scraping completed!");
                 return 0;
