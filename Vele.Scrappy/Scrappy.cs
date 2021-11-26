@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Vele.Scrappy.Files;
 using Vele.Scrappy.Scraper;
 using Vele.Scrappy.Scraper.Interfaces;
 using Vele.Scrappy.Storage;
@@ -54,11 +55,32 @@ namespace Vele.Scrappy
                 pageResourcesExtractor,
                 _logger);
 
-            _logger.Information("Initiating scraping task");
-            await scraper.Scrape();
+            FilePersister persister = new FilePersister(
+                _outputFolder,
+                _websiteUrl,
+                storage,
+                _logger);
 
-            // TODO: persist files on filesystem
-            // TODO: handle errors
+            _logger.Information("Initiating scraping task");
+            Task scrapingTask = scraper.Scrape();
+            _logger.Information("Initiating file persisting task");
+            Task persistingTask = persister.Persist();
+
+            await scrapingTask;
+            _logger.Information("Scraping task completed; requesting file persisting wrap-up");
+            persister.Complete();
+            await persistingTask;
+            _logger.Information("File persisting task completed");
+
+            IList<ScrapedItem> faulted = storage.GetInStatus(ScrapedItemStatus.Faulted);
+            if (faulted.Any())
+            {
+                _logger.Warning($"A total of {faulted.Count} files had errors:");
+                foreach (ScrapedItem item in faulted)
+                {
+                    _logger.Warning($"URI: {item.AbsoluteWebPath}");
+                }
+            }
         }
     }
 }
