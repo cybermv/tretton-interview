@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Vele.Scrappy.ConsoleApp": {
+      "commandName": "Project",
+      "commandLineArgs": "-u https://tretton37.com/ -o D:\\ScrapingOutput"
+    }
+  }
+}
