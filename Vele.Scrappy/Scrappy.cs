@@ -6,6 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Vele.Scrappy.Scraper;
+using Vele.Scrappy.Scraper.Interfaces;
+using Vele.Scrappy.Storage;
 
 namespace Vele.Scrappy
 {
@@ -39,7 +42,23 @@ namespace Vele.Scrappy
 
         public async Task ScrapeWebsite()
         {
-            // TODO: perform scraping
+            ScrapedItemStorage storage = new ScrapedItemStorage();
+
+            IResourceExtractor pageLinkExtractor = new PageLinkExtractor(_websiteUrl, _logger);
+            IResourceExtractor pageResourcesExtractor = new PageResourceExtractor(_websiteUrl, _downloadExternal, _logger);
+
+            WebsiteScraper scraper = new WebsiteScraper(
+                _websiteUrl.ToString(),
+                storage,
+                pageLinkExtractor,
+                pageResourcesExtractor,
+                _logger);
+
+            _logger.Information("Initiating scraping task");
+            await scraper.Scrape();
+
+            // TODO: persist files on filesystem
+            // TODO: handle errors
         }
     }
 }
